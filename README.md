@@ -2,3 +2,5 @@
 Deux  petits trucsintelligents
 
 plusieurs trucs intelligents
+
+lis moi
