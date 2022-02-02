@@ -9,6 +9,4 @@ Created on Wed Feb  2 16:24:17 2022
 
 import numpy as np
 
-x=np.linspace(0,300,5)
-y=np.sin(x)ux trucs 
-return y
+import matplotlib.pyplot as plt
