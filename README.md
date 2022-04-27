@@ -9,7 +9,7 @@ The structure of our work is the following :
   
   The file "exemples.ipynb" regroups all the different potentials we used and some results we got.
   
-  
+  The file "Schrodinger_alternative.ipynb" is another way to answer the problem with the function and the result on the same file.
   
   
   
