@@ -172,20 +172,6 @@ def Do_mid_point (psi_range,x_range,V,E,N_x_c):
 #-------------------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------
 
-def find_change(E_arr,N_arr):
-    """This function finds where and how much the nodes (N_arr) changes w.r.t E_arr
-    
-    N_arr = array containing the number of nodes for each tested energies"""
-    data = []
-    for i in range(0,len(E_arr)-1) :
-        if N_arr[i+1]-N_arr[i] > 0 :
-            data.append((i,N_arr[i+1]-N_arr[i]))
-    return data
-
-#-------------------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------------------
-
 def slice_E_arr(psi_range,x_range,V,E_arr,N_x_c,slices,temp_slices,remove_borders = False):
     """Function used to slice E_arr in slices containing only one number of nodes (except on the boundaries of the slices) 
     for the associated wavefunction.
@@ -204,7 +190,11 @@ def slice_E_arr(psi_range,x_range,V,E_arr,N_x_c,slices,temp_slices,remove_border
     N_arr = np.zeros(len(E_arr))
     for i in range(len(E_arr)):
         log_error , N_arr[i] , psi_out = Do_mid_point(psi_range,x_range,V,E_arr[i],N_x_c)
-    E_crit = find_change(E_arr,N_arr)
+        
+    E_crit = []
+    for i in range(0,len(N_arr)-1) :
+        if N_arr[i+1]-N_arr[i] > 0 :
+            E_crit.append((i,N_arr[i+1]-N_arr[i]))
     
     if len(E_crit)==0 :
         print("IN FUNCTION slice_E_arr : No change of number of nodes found")
@@ -345,7 +335,7 @@ def resolution(V,E_min,E_max,x_m,x_M,x_c,dx=-1,eps=10**-5,err=10**-3):
         if not (E_guess == E_min or E_guess == E_max):
             E_sol.append(E_guess)
         else :
-            print("Supression of an ambiguous solution : energy of the solution is one of the boundaries")
+            print("Ignoring an ambiguous solution : energy of the solution is one of the boundaries")
     
     
     #formating and plotting the data
@@ -368,7 +358,7 @@ def resolution(V,E_min,E_max,x_m,x_M,x_c,dx=-1,eps=10**-5,err=10**-3):
         E_out.append((E_found,N_psi))
     
     #checking the orthogonality of the solutions
-    print("\n-checking the orthogonality :")
+    print("\n-Checking the orthogonality :")
     max_scalar_product = 0
     for i in range(len(b_psi_out)):
         for j in range(1,len(b_psi_out)-i):
@@ -378,11 +368,11 @@ def resolution(V,E_min,E_max,x_m,x_M,x_c,dx=-1,eps=10**-5,err=10**-3):
     print("maximum amplitude of scalar product : ",max_scalar_product)
     
     #plotting the solutions
-    print("\n-plotting the solutions :")
+    print("\n-Plotting the solutions :")
     plt.figure(figsize=[9,7])
     
-    plt.ylabel('Energy')
-    plt.xlabel('x')
+    plt.ylabel(r'Energy ($E_H$)',fontsize=15)
+    plt.xlabel(r'x ($a_0$)',fontsize=15)
     
     psi = np.array(a_psi_out)
     potentiel = V(x_range)
