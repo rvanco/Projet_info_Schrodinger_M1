@@ -11,29 +11,35 @@ import sys
 
 def numerov(psi_range,x_range,V,E,direction,i_start=2):
     """
+    This function apply the numerov scheme on a discretized 1D space represented by x_range, in order to produce an approximate solution of the Schödinger
+    equation with the potential V and the energy E.
+    
     psi_range = array which will contain the psi_i, with the boundary values already initialised
     x_range = array containing the values of x
-    V = potential function 
-    E = energie à tester
-    direction -> 1 = gauche/droite  -1=droite/gauche
-    i_start = indice du prmeier élément à être traité par la procédure"""
+    V = function for the potential
+    E = Energy to be tested
+    direction -> 1 = increasing x ; -1 = decreasing x
+    i_start = index of the first element of psi_range to be calculated by the numerov scheme
+    
+    return : an array containing the approximate solution psi(x) for each x of x_range"""
     
     if (len(psi_range) != len (x_range)):
         raise Exception("psi_range and x_range must be of the same length, but they are not")
     
-    #création de variables utiles
+    #useful varaibles for the scheme
     Q = lambda x : 2*(E-V(x))
     h = x_range[1]-x_range[0]  
     psi_out = psi_range.copy()
     
-    #paramètre
-    P_window = 4
+    #P_window : order of magnitude allowed for the calculated values
+    P_window = 5
     
-    #réalisation de l'intégration de Numerov
+    #execution of the Numerov scheme
     if direction == 1 :
         for i in range(i_start,len(psi_range)):
             psi_out[i] = (2*(1-5/12*h**2*Q(x_range[i-1]))*psi_out[i-1]-(1+1/12*h**2*Q(x_range[i-2]))*psi_out[i-2])/(1+1/12*h**2*Q(x_range[i]))
             
+            #control of theamplitude of the wave function
             if abs(psi_out[i]) > 10**P_window:
                 for k in range(i+1):
                     psi_out[k] = psi_out[k]/10
@@ -272,10 +278,8 @@ def resolution(V,E_min,E_max,x_m,x_M,x_c,dx=-1,eps=10**-5,err=10**-3):
     x_range = np.linspace(x_m,x_M,int((x_M-x_m)/dx))
 
     psi_range = np.zeros(int((x_M-x_m)/dx))
-    psi_range[0] = psi_x_m
-    psi_range[1] = psi_x_m + eps
-    psi_range[-1] = psi_x_M
-    psi_range[-2] = psi_x_M + eps
+    psi_range[1] = eps
+    psi_range[-2] = eps
     
     N_x_c = int((x_c-x_m)/dx)
         
