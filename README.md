@@ -1,4 +1,4 @@
-[Schrodinger.py] has been created to give the best answer we could think of to the problem ["The Schrödinger" problem].
+This repository has been created to give the best answer we could think of to the numerical resolution of the 1D Schrödinger equation.
 
 To run our solution some package are required, you can find them in the requirement.txt file.
 
