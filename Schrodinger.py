@@ -379,7 +379,7 @@ def resolution(V,E_min,E_max,x_m,x_M,x_c,dx=-1,eps=10**-5,err=10**-3):
     
     #plotting the solutions
     print("\n-plotting the solutions :")
-    plt.figure()
+    plt.figure(figsize=[9,7])
     
     plt.ylabel('Energy')
     plt.xlabel('x')
