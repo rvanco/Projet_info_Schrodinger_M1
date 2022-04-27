@@ -1,3 +1,9 @@
+"""This package in intended for the resolution of the 1D stationnary Schrödinger equation with the Numerov scheme
+The energy is given in Hartree, while the distance is given in Bohr radius"""
+#-------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------
+
 import numpy as np
 from matplotlib import pyplot as plt
 import types
@@ -173,47 +179,65 @@ def Do_mid_point (psi_range,x_range,V,E,N_x_c):
 #-------------------------------------------------------------------------------------------
 
 def slice_E_arr(psi_range,x_range,V,E_arr,N_x_c,slices,temp_slices,remove_borders = False):
-    """Function used to slice E_arr in slices containing only one number of nodes (except on the boundaries of the slices) 
-    for the associated wavefunction.
-    
+    """
+    Function used to slice E_arr in slices containing only one number of nodes for the associated wavefunction.
     The slices which succesfuly contains only one number of nodes are stored in "slices"
     The slices which cannot be cut small enough to contain only one number of nodes are stored in "temp_slices", either to be discarded or to
     run them again in the function after having reduced their energy step.
+    "remove_borders" has to be set to True when E_arr is a temp_slice coming from a precedent call of the function
     
-    "remove_borders" has to be set to True when E_arr is a temp_slice coming from a precedent call of the function"""
+    psi_range = array which will contain the psi_i, with the boundary values already initialised
+    x_range = array containing the values of x
+    V = function for the potential
+    E_arr = array containing the energies to be tested
+    N_x_c = index of the mid_point in the x_range
+    slices = array to which the succesful slices will be appended
+    temp_slices = array to which the unsuccesful slices will be appended
+    remove_borders = if set to True, the function will ignore the slices found at the borders
+    
+    return : a boolean : True if the procedure did work / False if it did not work"""
     
     #verifying that the length of the E_arr is sufficient
     if len(E_arr)<10:
         print("IN FUNCTION slice_E_arr : insuficient length of E_arr")
         return False
     
+    #retrieving the number of nodes for each energies in E_range with the mid-point matching technique
     N_arr = np.zeros(len(E_arr))
     for i in range(len(E_arr)):
         log_error , N_arr[i] , psi_out = Do_mid_point(psi_range,x_range,V,E_arr[i],N_x_c)
-        
-    E_crit = []
+     
+    #finding where the number of nodes changes, and how much
+    E_crit = [] #array which will contains tuples (index of the change, size of the change)
     for i in range(0,len(N_arr)-1) :
         if N_arr[i+1]-N_arr[i] > 0 :
             E_crit.append((i,N_arr[i+1]-N_arr[i]))
     
+    #if there is no change in the number of nodes, do nothing
     if len(E_crit)==0 :
-        print("IN FUNCTION slice_E_arr : No change of number of nodes found")
-        return False
+        return True
  
+    #for the left boundary:
     if (not remove_borders):
+        #append to slices the slice running from the boundary to the first change of number of nodes
         slices.append(( [ E_arr[0] , E_arr[np.min([E_crit[0][0]+2,len(E_arr)-1])] ] ,N_arr[np.min([E_crit[0][0],len(N_arr)-1])]))
         if E_crit[0][1] > 1 :
+            #if the change of number of nodes is greater than 1, append to slices a slice around the position of the change
             temp_slices.append([ E_arr[E_crit[0][0]] , E_arr[np.min([E_crit[0][0]+2,len(E_arr)-1])] ])
     
+    #for the energies in between
     for i in range(1,len(E_crit)) :
+        #append to slices the slice running from one change of number of nodes to the other
         slices.append(( [ E_arr[E_crit[i-1][0]] , E_arr[np.min([E_crit[i][0]+2,len(E_arr)-1])] ],N_arr[np.min([E_crit[i][0],len(N_arr)-1])]))
         if E_crit[i][1] > 1 :
+            #if the change of number of nodes is greater than 1, append to slices a slice around the position of the change
             temp_slices.append([ E_arr[E_crit[i][0]] , E_arr[np.min([E_crit[i][0]+2,len(E_arr)-1])] ])
 
-    if (remove_borders and len(E_crit) == 1):
+    #handling the case of the first change of number of nodes when we don't want the boundaries.
+    if (remove_borders and E_crit[0][1] > 1):
         temp_slices.append([ E_arr[E_crit[0][0]] , E_arr[np.min([E_crit[0][0]+2,len(E_arr)-1])] ])
     
-    
+    #for the right boundary:
     if (not remove_borders):
         slices.append(( [ E_arr[E_crit[-1][0]] , E_arr[-1]],N_arr[-1]))
         
