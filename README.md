@@ -7,9 +7,9 @@ The structure of our work is the following :
   The file "Schrodinger.py" regroups all the functions we are using to obtain results. 
   This file includes the numerical method (Numerov).
   
-  The file "exemples.ipynb" regroups all the different potentials we used and some results we got.
+  The file "exemples.ipynb" regroups different exemples of the use of the functions defined in Schrodinger.py, mainly the code we used in order to generate the results presented in the report. Those exemples are explained and commented.
   
-  The file "Schrodinger_alternative.ipynb" is another way to answer the problem with the function and the result on the same file.
+  The file "Schrodinger_alternative.ipynb" is another way to answer the problem with the functions and the results on the same file.
   
   
   
