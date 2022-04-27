@@ -11,7 +11,7 @@ import sys
 
 def numerov(psi_range,x_range,V,E,direction,i_start=2):
     """
-    This function apply the numerov scheme on a discretized 1D space represented by x_range, in order to produce an approximate solution of the Schödinger
+    This function applies the numerov scheme on a discretized 1D space represented by x_range, in order to produce an approximate solution of the Schödinger
     equation with the potential V and the energy E.
     
     psi_range = array which will contain the psi_i, with the boundary values already initialised
@@ -26,7 +26,7 @@ def numerov(psi_range,x_range,V,E,direction,i_start=2):
     if (len(psi_range) != len (x_range)):
         raise Exception("psi_range and x_range must be of the same length, but they are not")
     
-    #useful varaibles for the scheme
+    #useful quantities for the scheme
     Q = lambda x : 2*(E-V(x))
     h = x_range[1]-x_range[0]  
     psi_out = psi_range.copy()
@@ -35,11 +35,11 @@ def numerov(psi_range,x_range,V,E,direction,i_start=2):
     P_window = 5
     
     #execution of the Numerov scheme
-    if direction == 1 :
+    if direction == 1 : #for increasing x
         for i in range(i_start,len(psi_range)):
             psi_out[i] = (2*(1-5/12*h**2*Q(x_range[i-1]))*psi_out[i-1]-(1+1/12*h**2*Q(x_range[i-2]))*psi_out[i-2])/(1+1/12*h**2*Q(x_range[i]))
             
-            #control of theamplitude of the wave function
+            #control of the amplitude of the wave function
             if abs(psi_out[i]) > 10**P_window:
                 for k in range(i+1):
                     psi_out[k] = psi_out[k]/10
@@ -48,7 +48,7 @@ def numerov(psi_range,x_range,V,E,direction,i_start=2):
                 for k in range(i+1):
                     psi_out[k] = psi_out[k]*10
             
-    if direction == -1 :
+    if direction == -1 : #for decreasing x
         for i in range(len(psi_range)-1-i_start,-1,-1):
             psi_out[i] = (2*(1-5/12*h**2*Q(x_range[i+1]))*psi_out[i+1]-(1+1/12*h**2*Q(x_range[i+2]))*psi_out[i+2])/(1+1/12*h**2*Q(x_range[i]))
             
@@ -67,41 +67,52 @@ def numerov(psi_range,x_range,V,E,direction,i_start=2):
 #-------------------------------------------------------------------------------------------
 
 def Do_mid_point (psi_range,x_range,V,E,N_x_c):
-    """psi_range = array contenant les psi_i avec les valeurs aux bords déjà mises en place 
-    x_range = array contenant les x
-    V = fonction jouant le role de potentiel
-    E = energie à tester
-    N_x_c = indice du mid-point"""
+    """
+    This function applies the mid_point matching technique in order to apply both boundary conditons (left and right) on the wave function. The logarithmic 
+    derivative error at the matching point is calculated. It handles the problematic case of having a matching point on a node, where the logarithmic 
+    derivative diverges, by translating the matching point.
     
+    psi_range = array which will contain the psi_i, with the boundary values already initialised
+    x_range = array containing the values of x
+    V = function for the potential
+    E = Energy to be tested
+    N_x_c = index of the mid_point in the x_range
+    
+    return : the logarithmic derivative error,
+    the number of nodes of the solution,
+    an array containing the approximate solution psi(x) for each x of x_range"""
+    
+    #useful quantity for the scheme
     h = x_range[1]-x_range[0]
     
-    #découpage des ranges au mid-point
+    #cutting of the ranges at the midpoint
     x_left = x_range.copy()[0:N_x_c+1]
     x_right = x_range.copy()[N_x_c:] 
-    
     psi_left = psi_range.copy()[0:N_x_c+1]
     psi_right = psi_range.copy()[N_x_c:]
     
     
-    #réalisation des intégrations de numerov
+    #performing the left and right numerov schemes
     psi_left = numerov(psi_left,x_left,V,E,1)
     psi_right = numerov(psi_right,x_right,V,E,-1)
     
     #-------------------------------------------------------------------------------------------
     #-------------------------------------------------------------------------------------------
-    ####gestion du cas où x_c est proche d'un noeud :
-    seuil = 10**-2
+    #### Handling of the case of a diverging logarithmic derivative
+    
+    #Checking if the inverse of the logarithmic derivative is too small (i.e. the logarithmic derivative is too big)
+    seuil = 10**-2 #size of the test window
     test_1 = -seuil < (psi_left[-1]*h)/(psi_left[-1]-psi_left[-2]) < seuil
     test_2 = -seuil < (psi_right[0]*h)/(psi_right[1]-psi_right[0]) < seuil
     
-    #flag pour la convergence de la procédure :
+    #flag for the convergence of the procedure:
     converged = False
     
-    #sauvegarde des psi
+    #saving the already found psi
     old_psi_left = psi_left 
     old_psi_right = psi_right
     
-    #décalage à droite
+    #translating x_c to the right if the inverse of the logarithmic derivative is too small
     for i in range(int(len(x_range)/25)):
         if test_1 or test_2 :
             x_left = np.concatenate((x_left,[x_range[len(x_left)]]))
@@ -114,16 +125,15 @@ def Do_mid_point (psi_range,x_range,V,E,N_x_c):
         test_1 = -seuil < (psi_left[-1]*h)/(psi_left[-1]-psi_left[-2]) < seuil
         test_2 = -seuil < (psi_right[0]*h)/(psi_right[1]-psi_right[0]) < seuil
         
-    #si pas convergé, décalage à gauche
+    #if still not converged, translating x_c to the left
     if not converged :
-        #récupération des anciens psi
+        #resetting x_c to the intial value
         psi_left = old_psi_left
         psi_right = old_psi_right
-        #récupération des anciens x_range
         x_left = x_range.copy()[0:N_x_c+1]
         x_right = x_range.copy()[N_x_c:] 
         
-        #décalage à gauche
+        #translation to the left
         for i in range(int(len(x_range)/25)):
             if test_1 or test_2 :
                 x_left = x_left[0:-1]
@@ -136,7 +146,7 @@ def Do_mid_point (psi_range,x_range,V,E,N_x_c):
             test_1 = -seuil < (psi_left[-1]*h)/(psi_left[-1]-psi_left[-2]) < seuil
             test_2 = -seuil < (psi_right[0]*h)/(psi_right[1]-psi_right[0]) < seuil
     
-    #si pas convergé, affichage message d'erreur
+    #if still not converge, abortion of the procedure
     if not converged :
         print("In Do_mid_point : matching error cannot be evaluated for E= ",E,"and N_x_c = ",N_x_c)
         return np.NaN , np.NaN , np.NaN
@@ -144,14 +154,14 @@ def Do_mid_point (psi_range,x_range,V,E,N_x_c):
     #-------------------------------------------------------------------------------------------
     
             
-    #raccordement des deux morceaux :
+    #junction of the two pieces of th ewave function :
     psi_out = np.concatenate((psi_left[0:-1],psi_right*((psi_left[-1])/(psi_right[0]))))
     
-    #évaluation de l'erreur du raccord en x_c
+    #evaluation of the logarithmic error
     log_error = 2*(psi_left[-1]-psi_left[-2])/((psi_left[-1])*h) - 2*(psi_right[1]-psi_right[0])/((psi_right[0])*h)
 
+    #evaluation of the number of nodes of the wave function
     N = 0
-    
     for i in range(1,len(psi_out)) :
         if (psi_out[i]*psi_out[i-1] < 0):
             N += 1
@@ -163,7 +173,9 @@ def Do_mid_point (psi_range,x_range,V,E,N_x_c):
 #-------------------------------------------------------------------------------------------
 
 def find_change(E_arr,N_arr):
-    #find where and how much the nodes (N_arr) changes w.r.t E_arr
+    """This function finds where and how much the nodes (N_arr) changes w.r.t E_arr
+    
+    N_arr = array containing the number of nodes for each tested energies"""
     data = []
     for i in range(0,len(E_arr)-1) :
         if N_arr[i+1]-N_arr[i] > 0 :
