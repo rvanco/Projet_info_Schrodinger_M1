@@ -272,10 +272,8 @@ def resolution(V,E_min,E_max,x_m,x_M,x_c,dx=-1,eps=10**-5,err=10**-3):
     x_range = np.linspace(x_m,x_M,int((x_M-x_m)/dx))
 
     psi_range = np.zeros(int((x_M-x_m)/dx))
-    psi_range[0] = psi_x_m
-    psi_range[1] = psi_x_m + eps
-    psi_range[-1] = psi_x_M
-    psi_range[-2] = psi_x_M + eps
+    psi_range[1] = eps
+    psi_range[-2] = eps
     
     N_x_c = int((x_c-x_m)/dx)
         

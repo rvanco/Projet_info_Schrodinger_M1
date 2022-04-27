@@ -10,9 +10,10 @@ import sys
 #-------------------------------------------------------------------------------------------
 
 def numerov(psi_range,x_range,V,E,direction,i_start=2):
-    """psi_range = array contenant les psi_i avec les valeurs aux bords déjà mises en place 
-    x_range = array contenant les x
-    V = fonction jouant le role de potentiel
+    """
+    psi_range = array which will contain the psi_i, with the boundary values already initialised
+    x_range = array containing the values of x
+    V = potential function 
     E = energie à tester
     direction -> 1 = gauche/droite  -1=droite/gauche
     i_start = indice du prmeier élément à être traité par la procédure"""
@@ -271,10 +272,8 @@ def resolution(V,E_min,E_max,x_m,x_M,x_c,dx=-1,eps=10**-5,err=10**-3):
     x_range = np.linspace(x_m,x_M,int((x_M-x_m)/dx))
 
     psi_range = np.zeros(int((x_M-x_m)/dx))
-    psi_range[0] = psi_x_m
-    psi_range[1] = psi_x_m + eps
-    psi_range[-1] = psi_x_M
-    psi_range[-2] = psi_x_M + eps
+    psi_range[1] = eps
+    psi_range[-2] = eps
     
     N_x_c = int((x_c-x_m)/dx)
         
