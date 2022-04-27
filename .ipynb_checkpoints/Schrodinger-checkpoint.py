@@ -10,10 +10,9 @@ import sys
 #-------------------------------------------------------------------------------------------
 
 def numerov(psi_range,x_range,V,E,direction,i_start=2):
-    """
-    psi_range = array which will contain the psi_i, with the boundary values already initialised
-    x_range = array containing the values of x
-    V = potential function 
+    """psi_range = array contenant les psi_i avec les valeurs aux bords déjà mises en place 
+    x_range = array contenant les x
+    V = fonction jouant le role de potentiel
     E = energie à tester
     direction -> 1 = gauche/droite  -1=droite/gauche
     i_start = indice du prmeier élément à être traité par la procédure"""
